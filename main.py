@@ -4,10 +4,11 @@ import cvzone
 import os
 
 cap = cv2.VideoCapture(2)
-cap.set(3,1280)
-cap.set(4,720)
+cap.set(3, 1280)
+cap.set(4, 720)
 
-detector = HandDetector(detectionCon = 0.65)
+detector = HandDetector(detectionCon=0.65)
+
 
 class DragImg():
     def __init__(self, path, posOrigin, imgType):
@@ -22,6 +23,13 @@ class DragImg():
             self.img = cv2.imread(self.path)
 
         self.size = self.img.shape[:2]
+
+    def update(self, cursor):
+        ox, oy = self.posOrigin
+        w, h = self.size
+        if ox < cursor[0] < ox + w and oy < cursor[1] < oy + h:
+            self.posOrigin = cursor[0] - w // 2, cursor[1] - h // 2
+
 
 
 img1 = cv2.imread("png/ironman.png", cv2.IMREAD_UNCHANGED)
@@ -54,25 +62,19 @@ while True:
         print(length)
         if length < 60:
             cursor = lmList[8]
-            # Check if in redion
-            if ox < cursor[0] < ox + w and oy < cursor[1] < oy + h:
-                ox, oy = cursor[0] - w // 2, cursor[1] - h // 2
-
-
+            for imgObject in listImg:
+                imgObject.update(cursor)
 
     try:
-
         for imgObject in listImg:
-            h,w = imgObject.size
+            h, w = imgObject.size
             ox, oy = imgObject.posOrigin
             if imgObject.imgType == "png":
                 img = cvzone.overlayPNG(img, imgObject.img, [ox, oy])
             else:
                 img[oy:oy + h, ox:ox + w] = imgObject.img
-
     except:
         pass
-
 
     cv2.imshow("Image", img)
     cv2.waitKey(1)
